@@ -78,7 +78,7 @@ MARINE_ZONE_NAME = "Tuktoyaktuk"
 # Yearly mean must be computed once via build_yearly_mean_helper_script.py.
 # Using Shingle Point's value as a provisional stand-in until computed.
 # =========================================================
-WATER_LEVEL_YEARLY_MEAN = -0.2668  # PROVISIONAL — recompute for this site
+WATER_LEVEL_YEARLY_MEAN = None  # auto-computed from 30-day TOPAZ6 history at runtime
 
 # =========================================================
 # HYDROMETRIC STATIONS — none for Tuktoyaktuk (nearest gauges are too far)

@@ -148,7 +148,10 @@ if wind_forecast_chart_bytes:
 # FETCH — marine forecast, weather alerts
 # =========================================================
 marine_entries = lib.get_marine_forecast(config.MARINE_ZONE_ID)
-marine_text, marine_source_text = lib.format_marine_forecast_text(marine_entries, config.MARINE_ZONE_NAME)
+marine_text, marine_source_text = lib.format_marine_forecast_text(
+    marine_entries, config.MARINE_ZONE_NAME,
+    exclude_title_patterns=["northern half"],  # zone 14600 mixes northern/southern — keep southern only
+)
 
 weather_alert_entries = lib.get_weather_alerts(config.LAT, config.LON)
 active_alerts = lib.filter_active_alerts(weather_alert_entries)
