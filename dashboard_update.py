@@ -202,7 +202,7 @@ tide_chart_bytes, tide_chart_caption = lib.build_tide_chart(tide_points, now_utc
 from concurrent.futures import ThreadPoolExecutor
 
 print("STARTING: parallel fetch of MODIS, water level, Sentinel-1, sea ice, wave forecast")
-with ThreadPoolExecutor(max_workers=5) as executor:
+with ThreadPoolExecutor(max_workers=6) as executor:
     wave_future = executor.submit(lib.fetch_wave_forecast, config.LAT, config.LON, now_utc)
     ice_future = executor.submit(
         lib.fetch_and_process_sentinel1_ice,
@@ -210,6 +210,16 @@ with ThreadPoolExecutor(max_workers=5) as executor:
         utm_zone=config.UTM_ZONE, utm_epsg=config.UTM_EPSG,
         center_x=config.UTM_CENTER_X, center_y=config.UTM_CENTER_Y,
         points=config.MAP_POINTS, tz_name=config.TZ_NAME,
+        reference_lines=config.MAP_REFERENCE_LINES,
+        coastline_geojson_path=config.COASTLINE_GEOJSON_PATH, now_utc=now_utc,
+    )
+    ice_zoom_future = executor.submit(
+        lib.fetch_and_process_sentinel1_ice,
+        lat=config.LAT, lon=config.LON, site_label=config.SITE_DISPLAY_NAME,
+        utm_zone=config.UTM_ZONE, utm_epsg=config.UTM_EPSG,
+        center_x=config.UTM_CENTER_X, center_y=config.UTM_CENTER_Y,
+        points=config.MAP_POINTS, tz_name=config.TZ_NAME,
+        half_width_m=25_000,
         reference_lines=config.MAP_REFERENCE_LINES,
         coastline_geojson_path=config.COASTLINE_GEOJSON_PATH, now_utc=now_utc,
     )
@@ -266,6 +276,13 @@ with ThreadPoolExecutor(max_workers=5) as executor:
         ice_bytes = None
         ice_caption = "Sea ice classification unavailable — fetch failed. Check Action logs."
 
+    try:
+        ice_zoom_bytes, ice_zoom_caption = ice_zoom_future.result()
+    except Exception as e:
+        print("SEA ICE ZOOM PARALLEL FETCH FAILED:", e)
+        ice_zoom_bytes = None
+        ice_zoom_caption = "Sea ice zoom unavailable — fetch failed. Check Action logs."
+
 modis_block, _ = lib._upload_chart_or_caption(modis_bytes, "modis.png", None)
 modis_caption = f"NASA MODIS Terra, true color, {modis_date}." if modis_date else "MODIS image unavailable."
 
@@ -298,6 +315,8 @@ blocks += lib.build_modis_section(modis_block, modis_caption, modis_date, now_ut
 sentinel1_explore_url = f"https://apps.sentinel-hub.com/eo-browser/?zoom=11&lat={config.LAT}&lng={config.LON}&themeId=DEFAULT-THEME"
 blocks += lib.build_sentinel1_section(sentinel1_bytes, sentinel1_caption, sentinel1_explore_url, config.SITE_DISPLAY_NAME)
 blocks += lib.build_sea_ice_section(ice_bytes, ice_caption, config.SITE_DISPLAY_NAME)
+blocks += lib.build_sea_ice_section(ice_zoom_bytes, ice_zoom_caption, config.SITE_DISPLAY_NAME,
+                                     title="🧊 Sea Ice — Sentinel-1 Classification — Zoom")
 blocks += lib.build_temperature_chart_section(temp_chart_bytes, temp_chart_caption)
 blocks += lib.build_tdd_histogram_section(tdd_histogram_bytes, tdd_histogram_caption)
 blocks += lib.build_wind_chart_section(wind_chart_bytes, wind_chart_caption, rose_bytes=wind_rose_bytes)
