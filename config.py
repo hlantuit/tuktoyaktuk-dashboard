@@ -64,16 +64,14 @@ COASTLINE_GEOJSON_PATH = "coastline_data.geojson"
 # TIDE STATION (DFO IWLS) — forecast only, no gauge data yet.
 # Station code for Tuktoyaktuk: verify at https://www.tides.gc.ca/en/stations
 # =========================================================
-TIDE_STATION_CODE = "06490"   # PROVISIONAL — verify on DFO IWLS
+TIDE_STATION_CODE = "06485"
 TIDE_STATION_NAME = "Tuktoyaktuk"
 
 # =========================================================
 # MARINE FORECAST ZONE (Environment Canada)
-# Tuktoyaktuk sits on the Mackenzie Delta / NWT Beaufort coast.
-# Look up the zone at https://weather.gc.ca/marine/index_e.html
 # =========================================================
-MARINE_ZONE_ID = "17000"     # PROVISIONAL — verify on EC marine forecast page
-MARINE_ZONE_NAME = "Mackenzie Delta"  # PROVISIONAL
+MARINE_ZONE_ID = "14600"
+MARINE_ZONE_NAME = "Tuktoyaktuk"
 
 # =========================================================
 # TOTAL WATER LEVEL (TOPAZ6 / CMEMS)
