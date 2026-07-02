@@ -33,7 +33,8 @@ def overpass_to_linestrings(data):
 print("Fetching eastern coastline from Overpass...")
 for attempt in range(3):
     try:
-        r = requests.post(OVERPASS_URL, data={"data": QUERY}, timeout=90)
+        r = requests.post(OVERPASS_URL, data={"data": QUERY}, timeout=90,
+                          headers={"User-Agent": "dashboard-coastline-fetch/1.0 (arctic-monitoring)"})
         r.raise_for_status()
         data = r.json()
         break
