@@ -1,0 +1,8 @@
+notion-client
+requests
+matplotlib
+Pillow
+xarray
+netCDF4
+tzdata
+cairosvg

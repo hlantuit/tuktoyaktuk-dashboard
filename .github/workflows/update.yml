@@ -1,0 +1,53 @@
+
+name: Update Tuktoyaktuk Dashboard
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch: {}    # allows manual "Run workflow" button
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this site's repo
+        uses: actions/checkout@v4
+
+      - name: Checkout shared dashboard-lib
+        uses: actions/checkout@v4
+        with:
+          repository: hlantuit/dashboard-lib
+          path: dashboard-lib
+          token: ${{ secrets.DASHBOARD_LIB_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run dashboard update
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+          COPERNICUS_USERNAME: ${{ secrets.COPERNICUS_USERNAME }}
+          COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
+          SENTINEL_HUB_CLIENT_ID: ${{ secrets.SENTINEL_HUB_CLIENT_ID }}
+          SENTINEL_HUB_CLIENT_SECRET: ${{ secrets.SENTINEL_HUB_CLIENT_SECRET }}
+          PYTHONUNBUFFERED: "1"
+        run: python -u dashboard_update.py
+
+      - name: Commit updated cache
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cache/
+          git diff --staged --quiet || git commit -m "Update temperature cache [skip ci]"
+          git push
