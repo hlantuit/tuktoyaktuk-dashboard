@@ -234,6 +234,10 @@ with ThreadPoolExecutor(max_workers=6) as executor:
         lat=config.LAT, lon=config.LON, now_utc=now_utc, site_label=config.SITE_DISPLAY_NAME,
         yearly_mean=config.WATER_LEVEL_YEARLY_MEAN,
     )
+    gdsps_future = executor.submit(
+        lib.fetch_gdsps_water_level,
+        lat=config.LAT, lon=config.LON, now_utc=now_utc, site_label=config.SITE_DISPLAY_NAME,
+    )
     sentinel1_future = executor.submit(
         lib.fetch_and_process_sentinel1,
         lat=config.LAT, lon=config.LON, site_label=config.SITE_DISPLAY_NAME,
@@ -263,6 +267,12 @@ with ThreadPoolExecutor(max_workers=6) as executor:
         copernicus_times, copernicus_values, copernicus_yearly_mean = None, None, None
 
     try:
+        gdsps_times, gdsps_values, gdsps_yearly_mean = gdsps_future.result()
+    except Exception as e:
+        print("GDSPS WATER LEVEL PARALLEL FETCH FAILED:", e)
+        gdsps_times, gdsps_values, gdsps_yearly_mean = None, None, None
+
+    try:
         sentinel1_bytes, sentinel1_caption = sentinel1_future.result()
     except Exception as e:
         print("SENTINEL-1 PARALLEL FETCH FAILED:", e)
@@ -288,6 +298,7 @@ modis_caption = f"NASA MODIS Terra, true color, {modis_date}." if modis_date els
 
 water_level_chart_bytes, water_level_chart_caption = lib.build_water_level_chart(
     copernicus_times, copernicus_values, config.TZ_NAME, copernicus_yearly_mean,
+    gdsps_times=gdsps_times, gdsps_values=gdsps_values, gdsps_yearly_mean=gdsps_yearly_mean,
 )
 water_level_text = (
     [("Latest forecast value: ", f"{copernicus_values[0]:.2f} m (above geoid, TOPAZ6 model reference level)")] if copernicus_values
