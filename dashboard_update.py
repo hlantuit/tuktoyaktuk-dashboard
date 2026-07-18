@@ -199,6 +199,9 @@ tide_chart_bytes, tide_chart_caption = lib.build_tide_chart(tide_points, now_utc
 # =========================================================
 # PARALLEL FETCH — MODIS, total water level, Sentinel-1, wave forecast
 # =========================================================
+print("STARTING: wildfire hotspot fetch")
+wildfire_data = lib.fetch_cwfis_wildfires(config.LAT, config.LON, radius_km=600, now_utc=now_utc)
+
 from concurrent.futures import ThreadPoolExecutor
 
 print("STARTING: parallel fetch of MODIS, water level, Sentinel-1, sea ice, wave forecast")
@@ -318,6 +321,7 @@ blocks += lib.build_todays_conditions_section(
     sun_text, sun_chart_bytes, sun_chart_caption,
 )
 blocks += lib.build_active_alerts_section(active_alerts)
+blocks += lib.build_wildfire_section(wildfire_data, config.LAT, config.LON, now_utc, config.TZ_NAME)
 blocks += lib.build_gem_forecast_section(gem_forecast, config.TZ_NAME, now_utc=now_utc)
 blocks += lib.build_marine_forecast_section(marine_text, marine_source_text, config.MARINE_ZONE_NAME, config.MARINE_ZONE_ID)
 blocks += lib.build_wave_forecast_section(wave_data)
@@ -333,7 +337,7 @@ blocks += lib.build_tdd_histogram_section(tdd_histogram_bytes, tdd_histogram_cap
 blocks += lib.build_wind_chart_section(wind_chart_bytes, wind_chart_caption, rose_bytes=wind_rose_bytes)
 blocks += lib.build_disclaimer_section([
     "gem", "open_meteo", "modis", "sentinel1",
-    "tides", "marine", "alerts", "waves", "cmems",
+    "tides", "marine", "alerts", "waves", "cmems", "wildfire",
 ])
 
 lib.publish_blocks_to_notion(blocks)
