@@ -1,4 +1,4 @@
-"""
+﻿"""
 dashboard_update.py — Tuktoyaktuk entrypoint.
 
 Coastal Arctic site: tide forecast (DFO, no gauge yet), marine forecast,
@@ -321,7 +321,10 @@ blocks += lib.build_todays_conditions_section(
     sun_text, sun_chart_bytes, sun_chart_caption,
 )
 blocks += lib.build_active_alerts_section(active_alerts)
-blocks += lib.build_wildfire_section(wildfire_data, config.LAT, config.LON, now_utc, config.TZ_NAME)
+blocks += lib.build_wildfire_section(wildfire_data, config.LAT, config.LON, now_utc, config.TZ_NAME,
+                                              bbox_3413=config.MODIS_BBOX_3413,
+                                              center_x=config.MODIS_CENTER_X, center_y=config.MODIS_CENTER_Y,
+                                              rotation_deg=config.MODIS_ROTATION_DEG)
 blocks += lib.build_gem_forecast_section(gem_forecast, config.TZ_NAME, now_utc=now_utc)
 blocks += lib.build_marine_forecast_section(marine_text, marine_source_text, config.MARINE_ZONE_NAME, config.MARINE_ZONE_ID)
 blocks += lib.build_wave_forecast_section(wave_data)
