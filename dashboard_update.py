@@ -205,6 +205,14 @@ wildfire_data = lib.fetch_cwfis_wildfires(config.LAT, config.LON, radius_km=600,
 from concurrent.futures import ThreadPoolExecutor
 
 print("STARTING: parallel fetch of MODIS, water level, Sentinel-1, sea ice, wave forecast")
+_sh_token_prefetch = lib.get_sentinel_hub_token()
+_s1_scene = (
+    lib.find_latest_sentinel1_date(
+        _sh_token_prefetch, config.LAT, config.LON, config.SITE_DISPLAY_NAME, now_utc=now_utc,
+    )
+    if _sh_token_prefetch
+    else (None, None, None, None, None)
+)
 with ThreadPoolExecutor(max_workers=6) as executor:
     wave_future = executor.submit(lib.fetch_wave_forecast, config.LAT, config.LON, now_utc)
     ice_future = executor.submit(
@@ -215,6 +223,7 @@ with ThreadPoolExecutor(max_workers=6) as executor:
         points=config.MAP_POINTS, tz_name=config.TZ_NAME,
         reference_lines=config.MAP_REFERENCE_LINES,
         coastline_geojson_path=config.COASTLINE_GEOJSON_PATH, now_utc=now_utc,
+        s1_scene=_s1_scene,
     )
     ice_zoom_future = executor.submit(
         lib.fetch_and_process_sentinel1_ice,
@@ -225,6 +234,7 @@ with ThreadPoolExecutor(max_workers=6) as executor:
         half_width_m=25_000,
         reference_lines=config.MAP_REFERENCE_LINES,
         coastline_geojson_path=config.COASTLINE_GEOJSON_PATH, now_utc=now_utc,
+        s1_scene=_s1_scene,
     )
     modis_future = executor.submit(
         lib.fetch_and_process_modis,
@@ -249,6 +259,7 @@ with ThreadPoolExecutor(max_workers=6) as executor:
         points=config.MAP_POINTS, tz_name=config.TZ_NAME,
         reference_lines=config.MAP_REFERENCE_LINES,
         coastline_geojson_path=config.COASTLINE_GEOJSON_PATH, now_utc=now_utc,
+        s1_scene=_s1_scene,
     )
 
     try:
