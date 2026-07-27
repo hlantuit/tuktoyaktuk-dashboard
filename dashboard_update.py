@@ -25,6 +25,7 @@ temp_cache_dirty = False
 # FETCH — GEM/GDPS forecast (primary), Open-Meteo as fallback
 # =========================================================
 gem_forecast = lib.fetch_gem_forecast(config.LAT, config.LON, now_utc, tz_name=config.TZ_NAME)
+gem_cloud_cover = lib.fetch_gem_cloud_cover(config.LAT, config.LON, now_utc, tz_name=config.TZ_NAME)
 if gem_forecast:
     print(f"GEM FORECAST: using source={gem_forecast['source']}")
 else:
@@ -336,7 +337,7 @@ blocks += lib.build_wildfire_section(wildfire_data, config.LAT, config.LON, now_
                                               bbox_3413=config.MODIS_BBOX_3413,
                                               center_x=config.MODIS_CENTER_X, center_y=config.MODIS_CENTER_Y,
                                               rotation_deg=config.MODIS_ROTATION_DEG)
-blocks += lib.build_gem_forecast_section(gem_forecast, config.TZ_NAME, now_utc=now_utc)
+blocks += lib.build_gem_forecast_section(gem_forecast, config.TZ_NAME, now_utc=now_utc, cloud_cover_vals=gem_cloud_cover)
 blocks += lib.build_marine_forecast_section(marine_text, marine_source_text, config.MARINE_ZONE_NAME, config.MARINE_ZONE_ID)
 blocks += lib.build_wave_forecast_section(wave_data)
 blocks += lib.build_total_water_level_section(water_level_text, water_level_chart_bytes, water_level_chart_caption)
