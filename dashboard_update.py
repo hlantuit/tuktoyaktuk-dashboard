@@ -202,6 +202,11 @@ tide_chart_bytes, tide_chart_caption = lib.build_tide_chart(tide_points, now_utc
 # =========================================================
 print("STARTING: wildfire hotspot fetch")
 wildfire_data = lib.fetch_cwfis_wildfires(config.LAT, config.LON, radius_km=600, now_utc=now_utc)
+print("STARTING: aurora Kp forecast")
+aurora_kp = lib.fetch_aurora_kp(config.LAT)
+
+print("STARTING: air quality index")
+aqhi = lib.fetch_aqhi(config.LAT, config.LON, now_utc)
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -323,6 +328,7 @@ water_level_text = (
 # =========================================================
 # ASSEMBLE PAGE
 # =========================================================
+_uv_today = (gem_forecast["daily"]["uv_index"] or [None])[0] if gem_forecast else None
 blocks = []
 blocks += lib.build_header_blocks(now_local, logo_url=config.LOGO_URL, logo_png_bytes=logo_png_bytes,
                                     institution_text=config.INSTITUTION_TEXT, tz_name=config.TZ_NAME)
@@ -331,12 +337,14 @@ blocks += lib.build_todays_conditions_section(
     config.LAT, config.LON, wind_now_text, wind_source_text, wind_icon_block, wind_forecast_chart_block,
     tide_text, tide_chart_bytes, tide_chart_caption, config.TIDE_STATION_CODE,
     sun_text, sun_chart_bytes, sun_chart_caption,
+    uv_index=_uv_today, aurora_kp=aurora_kp,
 )
 blocks += lib.build_active_alerts_section(active_alerts)
 blocks += lib.build_wildfire_section(wildfire_data, config.LAT, config.LON, now_utc, config.TZ_NAME,
                                               bbox_3413=config.MODIS_BBOX_3413,
                                               center_x=config.MODIS_CENTER_X, center_y=config.MODIS_CENTER_Y,
-                                              rotation_deg=config.MODIS_ROTATION_DEG)
+                                              rotation_deg=config.MODIS_ROTATION_DEG,
+                                              aqhi=aqhi)
 blocks += lib.build_gem_forecast_section(gem_forecast, config.TZ_NAME, now_utc=now_utc, cloud_cover_vals=gem_cloud_cover)
 blocks += lib.build_marine_forecast_section(marine_text, marine_source_text, config.MARINE_ZONE_NAME, config.MARINE_ZONE_ID)
 blocks += lib.build_wave_forecast_section(wave_data)
@@ -362,3 +370,6 @@ if temp_cache_dirty:
     print(f"CACHE: saved {len(temp_cache)} years to {lib.CACHE_FILE_PATH}")
 else:
     print("CACHE: no new years added this run, skipping save")
+
+
+
